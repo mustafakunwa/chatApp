@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
 
     socket.on('sendMessage', (message, callback) => {
         const user = getUser(socket.id);
-
+        if (!user) return callback()
         const filter = new Filter();
         if (filter.isProfane(message)) {
             return callback('profanity is not allowed')
@@ -54,6 +54,7 @@ io.on('connection', (socket) => {
 
     socket.on('sendLocation', (coord, callback) => {
         const user = getUser(socket.id);
+        if (!user) return callback()
 
         io.to(user.room).emit("locationMessage", genrateLocationMessage(user.username, `${coord.lat},${coord.lng}`))
         callback()
