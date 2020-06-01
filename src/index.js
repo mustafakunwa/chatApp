@@ -32,8 +32,12 @@ io.on('connection', (socket) => {
             return callback(error)
         }
         socket.join(user.room);
-        socket.emit("message", genrateMessage(undefined, 'Welcome!'));
-        socket.broadcast.to(user.room).emit("message", genrateMessage(undefined, `${user.username} has joined `));
+        socket.emit("message", genrateMessage("admin", 'Welcome!'));
+        socket.broadcast.to(user.room).emit("message", genrateMessage("admin", `${user.username} has joined `));
+        io.to(user.room).emit('roomData', {
+            room: user.room,
+            users: getUsersInRoom(user.room)
+        })
         callback()
     })
 
@@ -58,8 +62,14 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         const user = removeUser(socket.id)
-        if (user)
-            return io.to(user.room).emit("message", genrateMessage(undefined, `${user.username} has left!`))
+
+        if (user) {
+            io.to(user.room).emit("message", genrateMessage("admin", `${user.username} has left!`))
+            io.to(user.room).emit('roomData', {
+                room: user.room,
+                users: getUsersInRoom(user.room)
+            })
+        }
 
     })
 })
